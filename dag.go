@@ -46,11 +46,40 @@ func (DAG *DAG) CountChildren(name string) int {
 	return 0
 }
 
+func (DAG DAG) PrintAdjacencyList() {
+	for _, pair := range DAG.Pairs {
+		fmt.Printf("%s + %s:\n=>%s\n", pair.male.StringName(), pair.female.StringName(), PrintChildren(pair.children))
+	}
+}
+
+// Maybe separate into first and last names? Also, this is counting people twice.
+func (DAG DAG) FindMostCommonName() (string, int) {
+	max := 0
+	mostCommonName := ""
+	nameMap := make(map[string]int)
+	for _, pair := range DAG.Pairs {
+		nameMap[pair.male.StringName()]++
+		nameMap[pair.female.StringName()]++
+		for _, child := range pair.children {
+			nameMap[child.StringName()]++
+		}
+	}
+
+	for k, v := range nameMap {
+		if v > max {
+			max = v
+			mostCommonName = k
+		}
+	}
+	fmt.Printf("%s: %d\n", mostCommonName, max)
+	return mostCommonName, max
+}
+
 func NewNode(name, sex, b, d string) *Node {
 	return &Node{name, sex, b, d}
 }
 
-func addChildren(nodes []*Node, node ...*Node) []*Node {
+func AddChildren(nodes []*Node, node ...*Node) []*Node {
 	for _, n := range node {
 		nodes = append(nodes, n)
 	}
@@ -58,7 +87,11 @@ func addChildren(nodes []*Node, node ...*Node) []*Node {
 }
 
 func (n *Node) StringName() string {
-	return n.name
+	if n == nil {
+		return "NIL"
+	} else {
+		return n.name
+	}
 }
 
 func PrintChildren(nodes []*Node) string {
@@ -69,16 +102,15 @@ func PrintChildren(nodes []*Node) string {
 	return result
 }
 
-func (DAG DAG) PrintAdjacencyList() {
-	for _, pair := range DAG.Pairs {
-		fmt.Printf("%s + %s:\n=>%s\n", pair.male.StringName(), pair.female.StringName(), PrintChildren(pair.children))
-	}
-}
-
 func main() {
 	dag := NewDAG()
+	// Move all this into separate file that populates graph
 	var children []*Node
 	var children1 []*Node
+	var children2 []*Node
+	var children3 []*Node
+	var children4 []*Node
+	//var children5 []*Node
 
 	wernerusBovens := NewNode("Wernerus Bovens", "m", "n/a", "1716")
 	mariaBraecken := NewNode("Maria Braecken", "f", "n/a", "1679")
@@ -89,7 +121,7 @@ func main() {
 	wilhelmusBovens := NewNode("Wilhelmus Bovens", "m", "1676", "n/a")
 	catherinaBovens := NewNode("Catherina Bovens", "f", "1679", "n/a")
 
-	children = addChildren(children, gertrudisBovens, mariaBovens, guilielmusBovens, wilhelmusBovens, catherinaBovens)
+	children = AddChildren(children, gertrudisBovens, mariaBovens, guilielmusBovens, wilhelmusBovens, catherinaBovens)
 	dag.AddPair(wernerusBovens, mariaBraecken, "n/a", children)
 
 	arnoldusMiermans := NewNode("Arnoldus Miermans", "m", "n/a", "1718")
@@ -103,9 +135,33 @@ func main() {
 	arnoldusMiermans2 := NewNode("Arnoldus Miermans", "m", "1718", "n/a")
 	mariaMiermans := NewNode("Maria Miermans", "f", "1722", "n/a")
 
-	children1 = addChildren(children1, guilielmusMiermans, wernerusMiermans, gertrudisMiermans, arnoldusMiermans1, joannesMiermans, mariaGMiermans, arnoldusMiermans2, mariaMiermans)
+	children1 = AddChildren(children1, guilielmusMiermans, wernerusMiermans, gertrudisMiermans, arnoldusMiermans1, joannesMiermans, mariaGMiermans, arnoldusMiermans2, mariaMiermans)
 	dag.AddPair(arnoldusMiermans, catherinaBovens, "September 16, 1700", children1)
 
+	joannesJanssen := NewNode("Joannes Janssen", "m", "n/a", "n/a")
+	gertrudisPhilippens := NewNode("Gertrudis Philippens", "f", "n/a", "n/a")
+
+	leonardusJanssen := NewNode("Leonardus Janssen", "m", "1678", "1746")
+	children2 = AddChildren(children2, leonardusJanssen)
+	dag.AddPair(joannesJanssen, gertrudisPhilippens, "n/a", children2)
+
+	johannesJanssen := NewNode("Johannes Janssen", "m", "n/a", "1771")
+	annaPenne := NewNode("Anna Penné", "f", "n/a", "1776")
+
+	children3 = AddChildren(children3, johannesJanssen)
+	dag.AddPair(leonardusJanssen, nil, "n/a", children3)
+
+	annaJanssen := NewNode("Anna Janssen", "f", "1738", "n/a")
+	mariaCatharinaJanssen := NewNode("Maria Catharina Janssen", "f", "1742", "n/a")
+	leonardusJannsen1 := NewNode("Leonardus Janssen", "m", "1745", "n/a")
+
+	children4 = AddChildren(children4, annaJanssen, mariaCatharinaJanssen, leonardusJannsen1)
+	dag.AddPair(johannesJanssen, annaPenne, "October 18, 1737", children4)
+
+	//annaMariaHechermans := NewNode("Anna Maria Hechermans", "f", "n/a", "n/a") // Marries guiliulmus miermans
+	// next row to add: arnoluds miermans, susanna miermans etc
+
+	dag.FindMostCommonName()
 	dag.PrintAdjacencyList()
 
 }
