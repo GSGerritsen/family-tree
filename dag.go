@@ -12,10 +12,11 @@ type DAG struct {
 
 // Node to represent a person in the tree
 type Node struct {
-	name string
-	sex  string
-	b    string
-	d    string
+	name    string
+	sex     string
+	b       string
+	d       string
+	visited bool
 }
 
 // subject to change: the male/female pair that produced a set of children, increasing graph depth. Could only have one person.
@@ -58,10 +59,22 @@ func (DAG DAG) FindMostCommonName() (string, int) {
 	mostCommonName := ""
 	nameMap := make(map[string]int)
 	for _, pair := range DAG.Pairs {
-		nameMap[pair.male.StringName()]++
-		nameMap[pair.female.StringName()]++
+
+		if pair.male.VisitedValue() == false {
+			nameMap[pair.male.StringName()]++
+			pair.male.SetVisitedToTrue()
+			//fmt.Printf("%v", pair.male.VisitedValue())
+		}
+		if pair.female.VisitedValue() == false {
+			nameMap[pair.female.StringName()]++
+			pair.female.SetVisitedToTrue()
+		}
 		for _, child := range pair.children {
-			nameMap[child.StringName()]++
+			if child.VisitedValue() == false {
+				nameMap[child.StringName()]++
+				child.SetVisitedToTrue()
+
+			}
 		}
 	}
 
@@ -71,12 +84,21 @@ func (DAG DAG) FindMostCommonName() (string, int) {
 			mostCommonName = k
 		}
 	}
-	fmt.Printf("%s: %d\n", mostCommonName, max)
+	// reset all visited flags back to false
+	for _, pair := range DAG.Pairs {
+		pair.male.SetVisitedToFalse()
+		pair.female.SetVisitedToFalse()
+		for _, child := range pair.children {
+			child.SetVisitedToFalse()
+		}
+	}
+
+	fmt.Printf("Most common name => %s: %d\n", mostCommonName, max)
 	return mostCommonName, max
 }
 
-func NewNode(name, sex, b, d string) *Node {
-	return &Node{name, sex, b, d}
+func NewNode(name, sex, b, d string, visited bool) *Node {
+	return &Node{name, sex, b, d, visited}
 }
 
 func AddChildren(nodes []*Node, node ...*Node) []*Node {
@@ -92,6 +114,19 @@ func (n *Node) StringName() string {
 	} else {
 		return n.name
 	}
+}
+
+// currently not working on pairs where female is nil...
+func (n *Node) VisitedValue() bool {
+	return n.visited
+}
+
+func (n *Node) SetVisitedToTrue() {
+	n.visited = true
+}
+
+func (n *Node) SetVisitedToFalse() {
+	n.visited = false
 }
 
 func PrintChildren(nodes []*Node) string {
@@ -111,49 +146,50 @@ func main() {
 	var children3 []*Node
 	var children4 []*Node
 	//var children5 []*Node
+	emptyNode := NewNode("n/a", "n/a", "n/a", "n/a", false)
 
-	wernerusBovens := NewNode("Wernerus Bovens", "m", "n/a", "1716")
-	mariaBraecken := NewNode("Maria Braecken", "f", "n/a", "1679")
+	wernerusBovens := NewNode("Wernerus Bovens", "m", "n/a", "1716", false)
+	mariaBraecken := NewNode("Maria Braecken", "f", "n/a", "1679", false)
 
-	gertrudisBovens := NewNode("Gertrudis Bovens", "f", "1672", "n/a")
-	mariaBovens := NewNode("Maria Bovens", "f", "1673", "n/a")
-	guilielmusBovens := NewNode("Guilielmus Bovens", "m", "1675", "n/a")
-	wilhelmusBovens := NewNode("Wilhelmus Bovens", "m", "1676", "n/a")
-	catherinaBovens := NewNode("Catherina Bovens", "f", "1679", "n/a")
+	gertrudisBovens := NewNode("Gertrudis Bovens", "f", "1672", "n/a", false)
+	mariaBovens := NewNode("Maria Bovens", "f", "1673", "n/a", false)
+	guilielmusBovens := NewNode("Guilielmus Bovens", "m", "1675", "n/a", false)
+	wilhelmusBovens := NewNode("Wilhelmus Bovens", "m", "1676", "n/a", false)
+	catherinaBovens := NewNode("Catherina Bovens", "f", "1679", "n/a", false)
 
 	children = AddChildren(children, gertrudisBovens, mariaBovens, guilielmusBovens, wilhelmusBovens, catherinaBovens)
 	dag.AddPair(wernerusBovens, mariaBraecken, "n/a", children)
 
-	arnoldusMiermans := NewNode("Arnoldus Miermans", "m", "n/a", "1718")
+	arnoldusMiermans := NewNode("Arnoldus Miermans", "m", "n/a", "1718", false)
 
-	guilielmusMiermans := NewNode("Guilielmus Miermans", "m", "1704", "n/a")
-	wernerusMiermans := NewNode("Wernerus Miermans", "m", "1707", "n/a")
-	gertrudisMiermans := NewNode("Gertrudis Miermans", "f", "1709", "n/a")
-	arnoldusMiermans1 := NewNode("Arnoldus Miermans", "m", "1713", "n/a")
-	joannesMiermans := NewNode("Joannes Miermans", "f", "1714", "n/a")
-	mariaGMiermans := NewNode("Maria Gertrudis Miermans", "f", "1715", "n/a")
-	arnoldusMiermans2 := NewNode("Arnoldus Miermans", "m", "1718", "n/a")
-	mariaMiermans := NewNode("Maria Miermans", "f", "1722", "n/a")
+	guilielmusMiermans := NewNode("Guilielmus Miermans", "m", "1704", "n/a", false)
+	wernerusMiermans := NewNode("Wernerus Miermans", "m", "1707", "n/a", false)
+	gertrudisMiermans := NewNode("Gertrudis Miermans", "f", "1709", "n/a", false)
+	arnoldusMiermans1 := NewNode("Arnoldus Miermans", "m", "1713", "n/a", false)
+	joannesMiermans := NewNode("Joannes Miermans", "f", "1714", "n/a", false)
+	mariaGMiermans := NewNode("Maria Gertrudis Miermans", "f", "1715", "n/a", false)
+	arnoldusMiermans2 := NewNode("Arnoldus Miermans", "m", "1718", "n/a", false)
+	mariaMiermans := NewNode("Maria Miermans", "f", "1722", "n/a", false)
 
 	children1 = AddChildren(children1, guilielmusMiermans, wernerusMiermans, gertrudisMiermans, arnoldusMiermans1, joannesMiermans, mariaGMiermans, arnoldusMiermans2, mariaMiermans)
 	dag.AddPair(arnoldusMiermans, catherinaBovens, "September 16, 1700", children1)
 
-	joannesJanssen := NewNode("Joannes Janssen", "m", "n/a", "n/a")
-	gertrudisPhilippens := NewNode("Gertrudis Philippens", "f", "n/a", "n/a")
+	joannesJanssen := NewNode("Joannes Janssen", "m", "n/a", "n/a", false)
+	gertrudisPhilippens := NewNode("Gertrudis Philippens", "f", "n/a", "n/a", false)
 
-	leonardusJanssen := NewNode("Leonardus Janssen", "m", "1678", "1746")
+	leonardusJanssen := NewNode("Leonardus Janssen", "m", "1678", "1746", false)
 	children2 = AddChildren(children2, leonardusJanssen)
 	dag.AddPair(joannesJanssen, gertrudisPhilippens, "n/a", children2)
 
-	johannesJanssen := NewNode("Johannes Janssen", "m", "n/a", "1771")
-	annaPenne := NewNode("Anna Penné", "f", "n/a", "1776")
+	johannesJanssen := NewNode("Johannes Janssen", "m", "n/a", "1771", false)
+	annaPenne := NewNode("Anna Penné", "f", "n/a", "1776", false)
 
 	children3 = AddChildren(children3, johannesJanssen)
-	dag.AddPair(leonardusJanssen, nil, "n/a", children3)
+	dag.AddPair(leonardusJanssen, emptyNode, "n/a", children3)
 
-	annaJanssen := NewNode("Anna Janssen", "f", "1738", "n/a")
-	mariaCatharinaJanssen := NewNode("Maria Catharina Janssen", "f", "1742", "n/a")
-	leonardusJannsen1 := NewNode("Leonardus Janssen", "m", "1745", "n/a")
+	annaJanssen := NewNode("Anna Janssen", "f", "1738", "n/a", false)
+	mariaCatharinaJanssen := NewNode("Maria Catharina Janssen", "f", "1742", "n/a", false)
+	leonardusJannsen1 := NewNode("Leonardus Janssen", "m", "1745", "n/a", false)
 
 	children4 = AddChildren(children4, annaJanssen, mariaCatharinaJanssen, leonardusJannsen1)
 	dag.AddPair(johannesJanssen, annaPenne, "October 18, 1737", children4)
