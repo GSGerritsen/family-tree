@@ -53,7 +53,6 @@ func (DAG DAG) PrintAdjacencyList() {
 	}
 }
 
-// Maybe separate into first and last names? Also, this is counting people twice.
 func (DAG DAG) FindMostCommonName() (string, int) {
 	max := 0
 	mostCommonName := ""
@@ -62,17 +61,16 @@ func (DAG DAG) FindMostCommonName() (string, int) {
 
 		if pair.male.VisitedValue() == false {
 			nameMap[pair.male.StringName()]++
-			pair.male.SetVisitedToTrue()
-			//fmt.Printf("%v", pair.male.VisitedValue())
+			pair.male.SetVisitedTo(true)
 		}
 		if pair.female.VisitedValue() == false {
 			nameMap[pair.female.StringName()]++
-			pair.female.SetVisitedToTrue()
+			pair.female.SetVisitedTo(true)
 		}
 		for _, child := range pair.children {
 			if child.VisitedValue() == false {
 				nameMap[child.StringName()]++
-				child.SetVisitedToTrue()
+				child.SetVisitedTo(true)
 
 			}
 		}
@@ -86,10 +84,10 @@ func (DAG DAG) FindMostCommonName() (string, int) {
 	}
 	// reset all visited flags back to false
 	for _, pair := range DAG.Pairs {
-		pair.male.SetVisitedToFalse()
-		pair.female.SetVisitedToFalse()
+		pair.male.SetVisitedTo(false)
+		pair.female.SetVisitedTo(false)
 		for _, child := range pair.children {
-			child.SetVisitedToFalse()
+			child.SetVisitedTo(false)
 		}
 	}
 
@@ -121,12 +119,8 @@ func (n *Node) VisitedValue() bool {
 	return n.visited
 }
 
-func (n *Node) SetVisitedToTrue() {
-	n.visited = true
-}
-
-func (n *Node) SetVisitedToFalse() {
-	n.visited = false
+func (n *Node) SetVisitedTo(value bool) {
+	n.visited = value
 }
 
 func PrintChildren(nodes []*Node) string {
