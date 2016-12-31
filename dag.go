@@ -47,13 +47,23 @@ func (DAG *DAG) CountChildren(name string) int {
 	return 0
 }
 
+func (DAG *DAG) ResetFlagsToFalse() {
+	for _, pair := range DAG.Pairs {
+		pair.male.SetVisitedTo(false)
+		pair.female.SetVisitedTo(false)
+		for _, child := range pair.children {
+			child.SetVisitedTo(false)
+		}
+	}
+}
+
 func (DAG DAG) PrintAdjacencyList() {
 	for _, pair := range DAG.Pairs {
 		fmt.Printf("%s + %s:\n=>%s\n", pair.male.StringName(), pair.female.StringName(), PrintChildren(pair.children))
 	}
 }
 
-func (DAG DAG) FindMostCommonName() (string, int) {
+func (DAG *DAG) FindMostCommonName() (string, int) {
 	max := 0
 	mostCommonName := ""
 	nameMap := make(map[string]int)
@@ -82,15 +92,8 @@ func (DAG DAG) FindMostCommonName() (string, int) {
 			mostCommonName = k
 		}
 	}
-	// reset all visited flags back to false
-	for _, pair := range DAG.Pairs {
-		pair.male.SetVisitedTo(false)
-		pair.female.SetVisitedTo(false)
-		for _, child := range pair.children {
-			child.SetVisitedTo(false)
-		}
-	}
 
+	DAG.ResetFlagsToFalse()
 	fmt.Printf("Most common name => %s: %d\n", mostCommonName, max)
 	return mostCommonName, max
 }
@@ -188,7 +191,7 @@ func main() {
 	children4 = AddChildren(children4, annaJanssen, mariaCatharinaJanssen, leonardusJannsen1)
 	dag.AddPair(johannesJanssen, annaPenne, "October 18, 1737", children4)
 
-	//annaMariaHechermans := NewNode("Anna Maria Hechermans", "f", "n/a", "n/a") // Marries guiliulmus miermans
+	//annaMariaHechermans := NewNode("Anna Maria Hechermans", "f", "n/a", "n/a") // Marries guilielmus miermans
 	// next row to add: arnoluds miermans, susanna miermans etc
 
 	dag.FindMostCommonName()
